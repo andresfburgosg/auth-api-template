@@ -10,6 +10,10 @@ export const imagesAllowedMimeTypes = [
   "image/webp",
   "image/gif",
 ];
+export const imagesAllowedExtensions = ["jpeg", "jpg", "png", "webp", "gif"];
+export const imagesMaxPixels = 20000000;
+export const imagesMaxWidth = 6000;
+export const imagesMaxHeight = 6000;
 export const schemaValidationErrorMessages = Object.freeze({
   required: "this field is required",
   invalidType: "invalid type",

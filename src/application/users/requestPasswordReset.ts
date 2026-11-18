@@ -10,20 +10,16 @@ export class RequestPasswordReset {
 
   async execute(email: string): Promise<void> {
     const existingUser = await this.userRepository.getByEmail(email);
-    if (!existingUser) {
-      throw new ConflictError("Request Password Reset", "User does not exist");
-    }
-
-    if (!existingUser.isActive) {
+    if (!existingUser || !existingUser.isActive) {
       throw new ConflictError(
         "Request Password Reset",
-        `User ${existingUser.email} is not actived`
+        "Invalid user to request a reset password",
       );
     }
 
     const rawToken = createRandomToken();
     const hashedToken = createHashedToken(rawToken);
-    const resetIssueDate = new Date("YYYY-mm-dd H:i:s");
+    const resetIssueDate = new Date();
     const resetExpirationDate = new Date(resetIssueDate);
     resetExpirationDate.setHours(resetExpirationDate.getHours() + 2);
     const resetPasswordInfo = {
@@ -35,7 +31,7 @@ export class RequestPasswordReset {
     const userPasswordRequestUpdated =
       await this.userRepository.updateCredentials(
         existingUser.id,
-        resetPasswordInfo
+        resetPasswordInfo,
       );
 
     if (
@@ -46,7 +42,7 @@ export class RequestPasswordReset {
     ) {
       throw new ConflictError(
         "Request Password Reset",
-        `Error trying to request password resetting for user ${existingUser.email}`
+        `Error trying to request password resetting for user ${existingUser.email}`,
       );
     }
 

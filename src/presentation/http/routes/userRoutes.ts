@@ -3,6 +3,7 @@ import { userController } from "../containers/UserContainer.js";
 import { uploadImagesValidator } from "../middlewares/uploadImagesValidator.js";
 import { validateRequestParams } from "../middlewares/paramsValidator.js";
 import { registerSchema } from "../schemas/userValidationSchemas.js";
+import { imagesValidateNormalize } from "../middlewares/imagesValidateNormalize.js";
 
 const router = Router();
 
@@ -11,8 +12,9 @@ const router = Router();
 router.post(
   "/register",
   uploadImagesValidator.single("profilePic"),
+  imagesValidateNormalize,
   validateRequestParams(registerSchema),
-  userController.create.bind(userController)
+  userController.create.bind(userController),
 ); //register
 //passwordresetreq
 //validatepasswordresetreq
