@@ -38,7 +38,7 @@ export class PrismaUserRepository implements UserRepository {
   }
   async updateCredentials(
     userId: string,
-    data: Partial<UserCredentialsData>
+    data: Partial<UserCredentialsData>,
   ): Promise<UserWithCredentials> {
     const prismaUserMapper = toUserCredentialsUpdateInput(data);
     const updatedUser = await this.prisma.user.update({
@@ -50,7 +50,7 @@ export class PrismaUserRepository implements UserRepository {
   }
   async getById(
     userId: string,
-    withCredentials?: boolean
+    withCredentials?: boolean,
   ): Promise<User | UserWithCredentials | null> {
     const userById = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -67,7 +67,7 @@ export class PrismaUserRepository implements UserRepository {
   }
   async getByEmail(
     email: string,
-    withCredentials?: boolean
+    withCredentials?: boolean,
   ): Promise<User | UserWithCredentials | null> {
     const userByEmail = await this.prisma.user.findUnique({
       where: { email },
@@ -85,7 +85,7 @@ export class PrismaUserRepository implements UserRepository {
   async delete(userId: string): Promise<boolean> {
     const deletedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: { isActive: false, deletedAt: new Date("YYYY-mm-dd H:i:s") },
+      data: { isActive: false, deletedAt: new Date() },
     });
 
     return deletedUser.id === userId && !deletedUser.isActive;

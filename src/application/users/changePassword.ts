@@ -10,15 +10,8 @@ export class ChangePassword {
 
   async execute(userId: string, newPassword: string): Promise<boolean> {
     const existingUser = await this.userRepository.getById(userId);
-    if (!existingUser) {
-      throw new ConflictError("Change Password", "User does not exist");
-    }
-
-    if (!existingUser.isActive) {
-      throw new ConflictError(
-        "Change Password",
-        `User ${existingUser.email} is not actived`
-      );
+    if (!existingUser || !existingUser.isActive) {
+      throw new ConflictError("Change Password", "Invalid Request");
     }
 
     const newPasswordEncrypted = await createHashedPassword(newPassword);
@@ -27,20 +20,20 @@ export class ChangePassword {
       userId,
       {
         password: newPasswordEncrypted,
-        passwordChangedAt: new Date("YYYY-mm-dd H:i:s"),
-      }
+        passwordChangedAt: new Date(),
+      },
     );
 
     if (!userPasswordUpdated.id || !userPasswordUpdated.password) {
       throw new ConflictError(
         "Change Password",
-        `Error trying to change password for user ${existingUser.email}`
+        `Error trying to change password for user ${existingUser.email}`,
       );
     }
 
     return await compareHashedPassword(
       newPassword,
-      userPasswordUpdated.password
+      userPasswordUpdated.password,
     );
   }
 }

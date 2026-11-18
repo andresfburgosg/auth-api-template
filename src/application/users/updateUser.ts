@@ -10,18 +10,11 @@ export class UpdateUser {
 
   async execute(
     userId: string,
-    data: Omit<Partial<CreateUserData>, "email" | "password">
+    data: Omit<Partial<CreateUserData>, "email" | "password">,
   ): Promise<User> {
     const existingUser = await this.userRepository.getById(userId);
-    if (!existingUser) {
-      throw new ConflictError("Update User", "User does not exist");
-    }
-
-    if (!existingUser.isActive) {
-      throw new ConflictError(
-        "Update User",
-        `User ${existingUser.email} is not actived`
-      );
+    if (!existingUser || !existingUser.isActive) {
+      throw new ConflictError("Update User", "Invalid Request");
     }
 
     return this.userRepository.update(userId, data);

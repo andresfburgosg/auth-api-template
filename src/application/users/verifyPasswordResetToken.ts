@@ -7,15 +7,8 @@ export class VerifyPasswordResetToken {
 
   async execute(email: string, token: string): Promise<boolean> {
     const existingUser = await this.userRepository.getByEmail(email, true);
-    if (!existingUser) {
-      throw new ConflictError("Verify Password Reset", "User does not exist");
-    }
-
-    if (!existingUser.isActive) {
-      throw new ConflictError(
-        "Verify Password Reset",
-        `User ${existingUser.email} is not actived`
-      );
+    if (!existingUser || !existingUser.isActive) {
+      throw new ConflictError("Verify Password Reset", "Invalid Request");
     }
 
     if (
@@ -24,7 +17,7 @@ export class VerifyPasswordResetToken {
     ) {
       throw new ConflictError(
         "Verify Password Reset",
-        `User ${existingUser.email} has no valid token to restore the password`
+        `User ${existingUser.email} has no valid token to restore the password`,
       );
     }
 
@@ -36,11 +29,11 @@ export class VerifyPasswordResetToken {
     ) {
       throw new ConflictError(
         "Verify Password Reset",
-        `User ${existingUser.email} has no valid token to restore the password`
+        `User ${existingUser.email} has no valid token to restore the password`,
       );
     }
 
-    const currentDate = new Date("YYYY-mm-dd H:i:s");
+    const currentDate = new Date();
     if (
       currentDate < existingUser.resetPasswordTokenIssuedAt ||
       currentDate > existingUser.resetPasswordTokenExpiration ||
@@ -49,7 +42,7 @@ export class VerifyPasswordResetToken {
     ) {
       throw new ConflictError(
         "Verify Password Reset",
-        `User ${existingUser.email} has no valid token to restore the password`
+        `User ${existingUser.email} has no valid token to restore the password`,
       );
     }
 
@@ -57,7 +50,7 @@ export class VerifyPasswordResetToken {
     if (existingUser.resetPasswordToken !== hashedToken) {
       throw new ConflictError(
         "Verify Password Reset",
-        `User ${existingUser.email} has no valid token to restore the password`
+        `User ${existingUser.email} has no valid token to restore the password`,
       );
     }
 

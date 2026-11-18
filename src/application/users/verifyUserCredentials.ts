@@ -23,20 +23,13 @@ interface RefreshTokenPayload {
 export class VerifyUserCredentials {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userCacheService: UserCacheService
+    private readonly userCacheService: UserCacheService,
   ) {}
 
   async execute(email: string, password: string): Promise<UserWithLoginToken> {
     const existingUser = await this.userRepository.getByEmail(email, true);
-    if (!existingUser) {
+    if (!existingUser || !existingUser.isActive) {
       throw new ConflictError("Login", "Invalid User Credentials");
-    }
-
-    if (!existingUser.isActive) {
-      throw new ConflictError(
-        "Login",
-        `User ${existingUser.email} is not actived`
-      );
     }
 
     //TODO: bycript password input and db password
@@ -46,7 +39,7 @@ export class VerifyUserCredentials {
 
     const comparePassword = await compareHashedPassword(
       password,
-      existingUser.password
+      existingUser.password,
     );
     if (!comparePassword) {
       throw new ConflictError("Login", "Invalid User Credentials");
@@ -86,7 +79,7 @@ export class VerifyUserCredentials {
 export class verifyRefreshToken {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userCacheService: UserCacheService
+    private readonly userCacheService: UserCacheService,
   ) {}
 
   async execute(refreshToken: string): Promise<UserWithLoginToken> {
@@ -103,24 +96,24 @@ export class verifyRefreshToken {
     }
 
     const refreshSession = await this.userCacheService.getUserRefreshToken(
-      payload.sid
+      payload.sid,
     );
     if (!refreshSession) {
       throw new ConflictError("Refresh Token", "Session expired or revoked");
     }
 
     const refreshSessionData = JSON.parse(
-      refreshSession
+      refreshSession,
     ) as UserRefreshTokenPayload;
     await this.userCacheService.deleteUserRefreshToken(
-      refreshSessionData.sessionId
+      refreshSessionData.sessionId,
     );
     if (refreshSessionData.userId !== payload.id) {
       throw new ConflictError("Refresh Token", "Invalid Session");
     }
 
     const existingUser = await this.userRepository.getById(
-      refreshSessionData.userId
+      refreshSessionData.userId,
     );
     if (
       !existingUser ||
@@ -144,7 +137,7 @@ export class verifyRefreshToken {
     if (!userAccessToken || !userRefreshToken) {
       throw new ConflictError(
         "Refresh Token",
-        "Error trying to create access token"
+        "Error trying to create access token",
       );
     }
 
